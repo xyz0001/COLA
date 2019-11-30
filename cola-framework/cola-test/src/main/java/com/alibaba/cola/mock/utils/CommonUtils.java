@@ -9,6 +9,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.alibaba.cola.mock.ColaMockito;
+import com.alibaba.cola.mock.model.MockServiceModel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.alibaba.cola.mock.utils.Constants.COLAMOCK_PROXY_FLAG2;
 import static com.alibaba.cola.mock.utils.Constants.OS_WINDOWS;
 
 /**
@@ -16,6 +23,7 @@ import static com.alibaba.cola.mock.utils.Constants.OS_WINDOWS;
  * @date 2019/01/08
  */
 public class CommonUtils {
+    private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
 
     /** 默认日期格式*/
     public final static String DATE_FORMAT = "yyyy/MM/dd";
@@ -35,7 +43,11 @@ public class CommonUtils {
         return sb.toString();
     }
 
-    //首字母转小写
+    /**
+     * 首字母转小写
+     * @param s
+     * @return
+     */
     public static String toLowerCaseFirstOne(String s){
         if(Character.isLowerCase(s.charAt(0))) {
             return s;
@@ -118,11 +130,43 @@ public class CommonUtils {
         return osName.contains(OS_WINDOWS);
     }
 
+    public static void printMockObjectList(){
+        logger.info("===mock object list===");
+        int cnt = 0;
+        for(MockServiceModel m : ColaMockito.g().getContext().getMonitorList()){
+            //if(m.getInterfaceCls().getName().indexOf(Constants.COLAMOCK_PROXY_FLAG) < 0){
+            //    continue;
+            //}
+            cnt++;
+            String[] sp = m.getInterfaceCls().getName().split(COLAMOCK_PROXY_FLAG2);
+            String flag = m.isManual() ? "manual" : "auto";
+            flag = flag + "_" + (m.isLeaf() ? "LF" : "NF");
+            logger.info("[" + flag + "]serviceName:" + m.getServiceName() + ",class:" + sp[0]);
+        }
+        logger.info("===mock object list=== cnt " + cnt);
+    }
+
+    public static String autoWrapForClassNames(String source, int length){
+        String[] classNames = source.split(",");
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sbLine = new StringBuilder();
+        for(String name : classNames){
+            sbLine.append(name).append(",");
+            if(sbLine.length() > length){
+                sb.append(sbLine).append("\n");
+                sbLine = new StringBuilder();
+            }
+        }
+        if(sbLine.length() > 0){
+            sb.append(sbLine);
+        }
+        return sb.toString();
+    }
+
     public static void main(String[] args) {
-        Set<String> s = new HashSet<>();
-        s.add("com.alibaba.cola.mock.utils.CommonUtils");
-        s.add("com.alibaba.cola.mock.utils.AA");
-        System.out.println(CommonUtils.format2ColaConfigClazz(s));
+        String s = "111111111111111111111111111111111111111111111111,11111111111111111,11111222222222222,aaaaaaaaaaa,aaaaaa,a345aaaaaaaaa,aaaaaaa";
+        System.out.println(autoWrapForClassNames(s, 100) + "\n");
+        System.out.println(autoWrapForClassNames(s, 50) + "\n");
     }
 
 }

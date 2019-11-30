@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.cola.mock.annotation.ColaMockConfig;
 import com.alibaba.cola.mock.runner.ColaTestRunner;
 import com.alibaba.cola.mock.ColaMockito;
+<#if basePackage !=''>import ${basePackage}.SpringBaseTest</#if>;
 <#list imports as item>
 import ${item};
 </#list>
@@ -17,7 +18,8 @@ import ${item};
 */
 @RunWith(ColaTestRunner.class)
 @ColaMockConfig(mocks={})
-public class ${unitTestClass} <#if superClass !=''> extends ${superClass} </#if>{
+<#--public class ${unitTestClass} <#if superClass !=''> extends ${superClass} </#if>{-->
+public class ${unitTestClass} <#if basePackage !=''> extends SpringBaseTest </#if>{
 
     @Autowired
     ${testClass} ${testClassName};

@@ -29,6 +29,7 @@ public class ColaMockito {
     private static final Logger logger = LoggerFactory.getLogger(ColaMockito.class);
 
 
+    public static boolean debugModel;
     public static ColaMockito instance = new ColaMockito();
     static PodamFactory podamFactory = new PodamFactoryImpl();
     private ColaMockContext context = new ColaMockContext();
@@ -98,6 +99,9 @@ public class ColaMockito {
      * @return
      */
     public ColaTestModel scanColaTest(Class testClazz){
+        if(testClazz == null){
+            return null;
+        }
         ClassPathTestScanner testScanner = new ClassPathTestScanner();
         return testScanner.scanColaTest(testClazz);
     }

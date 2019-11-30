@@ -26,33 +26,6 @@ public class ColaMockBeanDefinitionParser extends AbstractSingleBeanDefinitionPa
     protected void doParse(Element element, BeanDefinitionBuilder bean) {
         String basePackages = element.getAttribute("base-package");
         bean.addConstructorArgValue(basePackages);
-
-        NodeList childNodeList = element.getChildNodes();
-
-        List<String> regexList = new ArrayList<>();
-        List<String> annotationList = new ArrayList<>();
-        List<String> assignableList = new ArrayList<>();
-        for (int i = 0; i < childNodeList.getLength(); i++) {
-            Node node = childNodeList.item(i);
-            if(!(node instanceof Element)){
-                continue;
-            }
-            Element cldElement = (Element)node;
-            String type = cldElement.getAttribute("type");
-            String expression = cldElement.getAttribute("expression");
-
-            if (type.equals("regex")) {
-                regexList.add(expression);
-            } else if (type.equals("annotation")) {
-                annotationList.add(expression);
-            } else if (type.equals("assignable")) {
-                assignableList.add(expression);
-            }
-        }
-
-        bean.addPropertyValue("mockRegex", regexList);
-        bean.addPropertyValue("mockAnnotation", annotationList);
-        bean.addPropertyValue("mockAssignable", assignableList);
     }
 
     @Override

@@ -3,10 +3,10 @@ package com.alibaba.cola.mock.spring;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import com.alibaba.cola.mock.proxy.MockDataProxy;
+import com.alibaba.cola.mock.agent.logger.Logger;
+import com.alibaba.cola.mock.agent.logger.LoggerFactory;
 import com.alibaba.cola.mock.utils.MockHelper;
 
-import org.mockito.Mockito;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -18,6 +18,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * @date 2019/04/25
  */
 public class ColaBeanInstantiationStrategy extends CglibSubclassingInstantiationStrategy{
+    private static final Logger logger = LoggerFactory.getLogger(ColaBeanInstantiationStrategy.class);
     /**
      * Return an instance of the bean with the given name in this factory.
      * @param bd the bean definition
@@ -37,6 +38,7 @@ public class ColaBeanInstantiationStrategy extends CglibSubclassingInstantiation
             }
             return super.instantiate(bd, beanName, owner);
         }catch (BeanInstantiationException e){
+            logger.error("instantiate error,will mock this Object!", e);
             return newInstance(bd.getTargetType());
         }
     }
@@ -63,6 +65,7 @@ public class ColaBeanInstantiationStrategy extends CglibSubclassingInstantiation
             }
             return super.instantiate(bd, beanName, owner, ctor, args);
         }catch (BeanInstantiationException e){
+            logger.error("instantiate error,will mock this Object!", e);
             return newInstance(bd.getTargetType(), args);
         }
     }
@@ -91,6 +94,7 @@ public class ColaBeanInstantiationStrategy extends CglibSubclassingInstantiation
             }
             return super.instantiate(bd, beanName, owner, factoryBean,factoryMethod,  args);
         }catch (BeanInstantiationException e){
+            logger.error("instantiate error,will mock this Object!", e);
             return newInstance(bd.getTargetType(), args);
         }
     }

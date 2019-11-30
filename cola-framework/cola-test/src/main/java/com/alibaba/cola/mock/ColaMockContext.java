@@ -11,8 +11,12 @@ import com.alibaba.cola.mock.model.ColaTestDescription;
 import com.alibaba.cola.mock.model.ColaTestModel;
 import com.alibaba.cola.mock.model.MockServiceModel;
 import com.alibaba.cola.mock.model.StackTree;
+import com.alibaba.cola.mock.utils.Constants;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.runner.Description;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
@@ -20,6 +24,11 @@ import org.springframework.beans.factory.FactoryBean;
  * @date 2018/09/02
  */
 public class ColaMockContext implements Serializable{
+    private static final Logger logger = LoggerFactory.getLogger(ColaMockContext.class);
+    /** 根包路径*/
+    private String basePackage = StringUtils.EMPTY;
+    /** 测试的父类class*/
+    private Class testSuperClass;
     /** 当前测试实例信息*/
     private ColaTestDescription colaTestMeta;
     private StackTree stackTree = new StackTree();
@@ -63,6 +72,11 @@ public class ColaMockContext implements Serializable{
     public void putMonitorMock(MockServiceModel mockServiceModel){
         if(!monitorList.contains(mockServiceModel)){
             monitorList.add(mockServiceModel);
+        }else{
+            int i = monitorList.indexOf(mockServiceModel);
+            MockServiceModel exists = monitorList.get(i);
+            exists.setLeaf(mockServiceModel.isLeaf());
+            exists.setManual(mockServiceModel.isManual());
         }
     }
 
@@ -148,6 +162,27 @@ public class ColaMockContext implements Serializable{
 
     public StackTree getStackTree() {
         return stackTree;
+    }
+
+    public String getBasePackage() {
+        return basePackage;
+    }
+
+    public void setBasePackage(String basePackage) {
+        this.basePackage = basePackage;
+    }
+
+    public Class getTestSuperClass(){
+        if(testSuperClass != null){
+            return testSuperClass;
+        }
+        String superClassName = basePackage + Constants.DOT + "SpringBaseTest";
+        try {
+            testSuperClass = Class.forName(superClassName);
+        } catch (ClassNotFoundException e) {
+            logger.warn("[ClassNotFoundException]superClassName cannot find!" + superClassName);
+        }
+        return testSuperClass;
     }
 }
 

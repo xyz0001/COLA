@@ -1,12 +1,24 @@
 package com.alibaba.cola.mock.listener;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.alibaba.cola.container.command.AbstractCommand;
 import com.alibaba.cola.container.command.TestMethodRunCmd;
 import com.alibaba.cola.mock.ColaMockito;
+import com.alibaba.cola.mock.annotation.ColaMock;
 import com.alibaba.cola.mock.annotation.ExcludeCompare;
 import com.alibaba.cola.mock.model.ColaTestModel;
 import com.alibaba.cola.mock.model.InputParamsFile;
 import com.alibaba.cola.mock.model.MockDataFile;
+import com.alibaba.cola.mock.scan.AnnotationScanner;
+import com.alibaba.cola.mock.scan.RegexPatternTypeFilter;
 import com.alibaba.cola.mock.utils.SpyHelper;
 
 import org.junit.runner.Description;
@@ -33,7 +45,7 @@ public class DataRecordListener extends RunListener{
         spyHelper.processInject4Record();
         if(isSegmentRecord()){
             preLoadFileData();
-            readTestMethodConfig(description);
+            initTestConfig(description);
         }
     }
 
@@ -81,8 +93,19 @@ public class DataRecordListener extends RunListener{
      * 初始化当前运行方法配置
      * @param description
      */
-    private void readTestMethodConfig(Description description) {
+    private void initTestConfig(Description description) {
+        initFieldConfig(description);
+        initMethodConfig(description);
+    }
 
+    private void initFieldConfig(Description description){
+        ColaMockito.g().getContext()
+            .getColaTestModelMap()
+            .get(description.getTestClass())
+            .reScanConfigForInstance();
+    }
+
+    private void initMethodConfig(Description description){
         ExcludeCompare noNeedCompareConfig = description.getAnnotation(ExcludeCompare.class);
 
         ColaTestModel currentTestClassConfig = ColaMockito.g().getContext().getColaTestModelMap().get(description.getTestClass());

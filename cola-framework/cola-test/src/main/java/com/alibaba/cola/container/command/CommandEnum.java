@@ -10,7 +10,7 @@ public enum CommandEnum {
     TestMethodRunCmd("", "[^\\s]*[\\(#].*"),
     TestClassRunCmd("", "(\\w+\\.\\w+){1,}"),
     GuideCmd("", "^[rhq]$"),
-    OnlineRecordCmd("online", ""),
+    OnlineRecordCmd("watch", "监视录制"),
     ;
 
     private String cmd;

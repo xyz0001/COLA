@@ -12,6 +12,7 @@ import com.alibaba.cola.mock.model.InputParamsFile;
 import com.alibaba.cola.mock.model.InputParamsOfOneMethod;
 import com.alibaba.cola.mock.model.MockDataFile;
 import com.alibaba.cola.mock.model.ColaTestModel;
+import com.alibaba.cola.mock.model.MockServiceModel;
 import com.alibaba.cola.mock.utils.Constants;
 import com.alibaba.cola.mock.utils.DeepCopy;
 import com.alibaba.cola.mock.utils.MockHelper;
@@ -24,10 +25,23 @@ import org.springframework.cglib.proxy.MethodProxy;
  * @author shawnzhan.zxy
  * @date 2018/09/02
  */
-public class DataRecordProxy implements MethodInterceptor,InvocationHandler {
+public class DataRecordProxy implements MethodInterceptor,InvocationHandler,ColaProxyI {
     protected Class<?> mapperInterface;
     private Object instance;
     private MockDataProxy mockDataProxy;
+
+    public static Object createProxy2Pool(Class targetCls, Object target, String beanName
+        , boolean manual, boolean leaf){
+        DataRecordProxy mapperProxy = new DataRecordProxy(targetCls, target);
+        //不能给代理再生成代理，改成了装饰器模式
+        Object proxy = MockHelper.createMockFor(targetCls, mapperProxy);
+        ColaMockito.g().getContext().putMonitorMock(new MockServiceModel(targetCls, beanName, target, proxy, manual, leaf));
+        return proxy;
+    }
+
+    public static Object createProxy2PoolWithManual(Class targetCls, Object target, String beanName){
+        return createProxy2Pool(targetCls, target, beanName, true, false);
+    }
 
     public DataRecordProxy(Class mapperInterface, Object instance){
         this.mapperInterface = mapperInterface;
@@ -185,7 +199,7 @@ public class DataRecordProxy implements MethodInterceptor,InvocationHandler {
 
     private boolean isNeedRecord(Method method){
         ColaTestModel colaTestModel = getColaMockito().getCurrentTestModel();
-        if (!(recordStarted() && colaTestModel.matchMockFilter(mapperInterface))) {
+        if (!(recordStarted() && colaTestModel.matchMockFilter(mapperInterface, method.getName()))) {
             return false;
         }
         if(StackSearcher.isTopMockPoint(colaTestModel, mapperInterface, method.getName())){
@@ -211,5 +225,10 @@ public class DataRecordProxy implements MethodInterceptor,InvocationHandler {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Object getInstance() {
+        return instance;
     }
 }

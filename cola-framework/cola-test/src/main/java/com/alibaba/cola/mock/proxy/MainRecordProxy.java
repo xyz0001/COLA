@@ -14,7 +14,7 @@ import org.springframework.cglib.proxy.MethodProxy;
  * @author shawnzhan.zxy
  * @date 2018/09/02
  */
-public class MainRecordProxy implements MethodInterceptor {
+public class MainRecordProxy implements MethodInterceptor,ColaProxyI {
     private Class<?> mapperInterface;
     private Object instance;
 
@@ -53,5 +53,8 @@ public class MainRecordProxy implements MethodInterceptor {
         return result;
     }
 
-
+    @Override
+    public Object getInstance() {
+        return instance;
+    }
 }

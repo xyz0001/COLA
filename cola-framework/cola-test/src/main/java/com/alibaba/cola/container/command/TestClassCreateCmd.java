@@ -2,6 +2,7 @@ package com.alibaba.cola.container.command;
 
 import java.util.Arrays;
 
+import com.alibaba.cola.mock.ColaMockito;
 import com.alibaba.cola.mock.ColaTestRecordController;
 import com.alibaba.cola.mock.autotest.ColaTestGenerator;
 
@@ -30,8 +31,9 @@ public class TestClassCreateCmd extends AbstractCommand {
 
     @Override
     protected void action() {
-        ColaTestGenerator generator = new ColaTestGenerator(this.getMethod(), ColaTestRecordController.getTemplateSuperClassName());
-        generator.generate(this.getParams());
+        ColaTestGenerator generator = new ColaTestGenerator(this.getMethod(), ColaMockito.g().getContext().getBasePackage()
+            , this.getParams());
+        generator.generate();
     }
 
     public String[] getParams(){

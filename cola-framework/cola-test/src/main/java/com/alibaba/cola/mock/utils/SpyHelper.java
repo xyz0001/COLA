@@ -10,14 +10,14 @@ import java.util.Set;
 import com.alibaba.cola.mock.ColaMockito;
 import com.alibaba.cola.mock.annotation.Inject;
 import com.alibaba.cola.mock.annotation.InjectOnlyTest;
-import com.alibaba.cola.mock.scan.InjectAnnotationScanner;
+import com.alibaba.cola.mock.mockito.MockInjection;
+import com.alibaba.cola.mock.scan.AnnotationScanner;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.configuration.AnnotationEngine;
 import org.mockito.internal.configuration.DefaultAnnotationEngine;
-import org.mockito.internal.configuration.DefaultInjectionEngine;
 import org.mockito.internal.configuration.SpyAnnotationEngine;
 import org.mockito.internal.configuration.injection.scanner.MockScanner;
 import org.mockito.internal.util.MockUtil;
@@ -53,7 +53,7 @@ public class SpyHelper {
             pauseRecord();
             scanAndCreateMockitoFields();
             Set<Field> mockDependentFields = new HashSet<Field>();
-            new InjectAnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
+            new AnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
             inject(mockDependentFields, mocks);
         }finally {
             continueRecord();
@@ -68,8 +68,8 @@ public class SpyHelper {
     public void processInject4Test(Set<Object> extendMocks){
         scanAndCreateMockitoFields();
         Set<Field> mockDependentFields = new HashSet<Field>();
-        new InjectAnnotationScanner(ownerClazz, InjectOnlyTest.class).addTo(mockDependentFields);
-        new InjectAnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
+        new AnnotationScanner(ownerClazz, InjectOnlyTest.class).addTo(mockDependentFields);
+        new AnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
         Set<Object> mocks = new HashSet<>();
         mocks.addAll(extendMocks);
         mocks.addAll(this.mocks);
@@ -89,7 +89,7 @@ public class SpyHelper {
                 e.printStackTrace();
             }
         }
-        new DefaultInjectionEngine().injectMocksOnFields(mockDependentFields, mocks, owner);
+        MockInjection.injectMocksOnFields(mockDependentFields, mocks, owner);
     }
 
     @Deprecated
@@ -123,7 +123,7 @@ public class SpyHelper {
         try {
             pauseRecord();
             Set<Field> mockDependentFields = new HashSet<Field>();
-            new InjectAnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
+            new AnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
             resetMocks(mockDependentFields);
         }finally {
             continueRecord();
@@ -135,8 +135,8 @@ public class SpyHelper {
      */
     public void resetTest(){
         Set<Field> mockDependentFields = new HashSet<Field>();
-        new InjectAnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
-        new InjectAnnotationScanner(ownerClazz, InjectOnlyTest.class).addTo(mockDependentFields);
+        new AnnotationScanner(ownerClazz, Inject.class).addTo(mockDependentFields);
+        new AnnotationScanner(ownerClazz, InjectOnlyTest.class).addTo(mockDependentFields);
         resetMocks(mockDependentFields);
     }
 
@@ -145,14 +145,14 @@ public class SpyHelper {
             return;
         }
         Set<Object> oriTargetSet = getOriTargetSet();
-        new DefaultInjectionEngine().injectMocksOnFields(mockDependentFields, oriTargetSet, owner);
+        MockInjection.injectMocksOnFields(mockDependentFields, oriTargetSet, owner);
     }
 
     private Set<Object> getOriTargetSet(){
         Set<Object> oriTargetSet = new HashSet<>();
         Set<Field> mockFields = new HashSet<Field>();
-        new InjectAnnotationScanner(ownerClazz, Spy.class).addTo(mockFields);
-        new InjectAnnotationScanner(ownerClazz, Mock.class).addTo(mockFields);
+        new AnnotationScanner(ownerClazz, Spy.class).addTo(mockFields);
+        new AnnotationScanner(ownerClazz, Mock.class).addTo(mockFields);
         if(mockFields.size() == 0){
             return new HashSet<>();
         }
@@ -214,8 +214,8 @@ public class SpyHelper {
 
     private void processInjectAnnotation(Class clazz){
         Set<Field> mockDependentFields = new HashSet<Field>();
-        new InjectAnnotationScanner(clazz, Inject.class).addTo(mockDependentFields);
-        new InjectAnnotationScanner(clazz, InjectOnlyTest.class).addTo(mockDependentFields);
+        new AnnotationScanner(clazz, Inject.class).addTo(mockDependentFields);
+        new AnnotationScanner(clazz, InjectOnlyTest.class).addTo(mockDependentFields);
 
         for(Field f : mockDependentFields){
             FieldReader fr = new FieldReader(owner, f);

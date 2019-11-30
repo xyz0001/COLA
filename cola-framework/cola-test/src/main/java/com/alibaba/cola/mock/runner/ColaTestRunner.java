@@ -3,14 +3,12 @@ package com.alibaba.cola.mock.runner;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.alibaba.cola.mock.listener.IntegrateTestListener;
+import com.alibaba.cola.mock.ColaMockito;
+import com.alibaba.cola.mock.annotation.ColaBefore;
 import com.alibaba.cola.mock.model.ColaTestDescription;
 import com.alibaba.cola.mock.spring.ColaContextLoader;
 import com.alibaba.cola.mock.utils.reflection.BeanPropertySetter;
 import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.cola.mock.ColaMockito;
-import com.alibaba.cola.mock.annotation.ColaBefore;
-import com.alibaba.cola.mock.listener.UnitTestListener;
 
 import org.junit.internal.runners.model.ReflectiveCallable;
 import org.junit.internal.runners.statements.Fail;
@@ -24,7 +22,6 @@ import org.springframework.test.annotation.ProfileValueUtils;
 import org.springframework.test.context.MergedContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.statements.RunBeforeTestMethodCallbacks;
-import org.springframework.test.context.support.DefaultTestContext;
 
 /**
  * @author shawnzhan.zxy

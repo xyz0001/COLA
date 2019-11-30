@@ -1,27 +1,24 @@
 package com.alibaba.cola.mock.scan;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.alibaba.cola.mock.annotation.ColaMock;
 import com.alibaba.cola.mock.annotation.ColaMockConfig;
 import com.alibaba.cola.mock.model.ColaTestModel;
 import com.alibaba.cola.mock.runner.ColaTestRunner;
 import com.alibaba.cola.mock.runner.ColaTestUnitRunner;
+import com.alibaba.cola.mock.utils.ClassUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.runner.RunWith;
-import org.springframework.asm.ClassReader;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.util.ClassUtils;
 
 /**
  * mapper scanner
@@ -92,7 +89,8 @@ public class ClassPathTestScanner {
                 resourcePath + '/' + DEFAULT_RESOURCE_PATTERN;
             Resource[] resources = this.resourcePatternResolver.getResources(packageSearchPath);
             for(Resource res : resources){
-                Class testClass = Thread.currentThread().getContextClassLoader().loadClass(getClassName(res));
+                String className = ClassUtils.convertResourcePathToClassName(res.getInputStream());
+                Class testClass = Thread.currentThread().getContextClassLoader().loadClass(className);
                 if(!isColaTestClass(testClass)){
                     continue;
                 }
@@ -135,12 +133,12 @@ public class ClassPathTestScanner {
         }
     }
 
-    private String getClassName(Resource resource) throws IOException {
-        ClassReader classReader = new ClassReader(resource.getInputStream());
-        String className = classReader.getClassName();
-        className = className.replaceAll("/", ".");
-        return className;
-    }
+    //private String getClassName(Resource resource) throws IOException {
+    //    ClassReader classReader = new ClassReader(resource.getInputStream());
+    //    String className = classReader.getClassName();
+    //    className = className.replaceAll("/", ".");
+    //    return className;
+    //}
 
     private boolean isColaTestClass(Class<?> testClzz){
         RunWith runWith = testClzz.getAnnotation(RunWith.class);

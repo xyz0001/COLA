@@ -2,6 +2,8 @@ package com.alibaba.cola.mock.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * @author shawnzhan.zxy
  * @date 2018/09/02
@@ -15,14 +17,24 @@ public class MockServiceModel implements Serializable{
     private Object target;
     /** mock后生成的实例*/
     private Object mock;
-    private boolean spyMockito = false;
+    /** 是否人工标记*/
+    private boolean manual = false;
+    /** 是否最低层叶子mock*/
+    private boolean leaf = true;
 
     public MockServiceModel(){}
-    public MockServiceModel(Class<?> interfaceCls, String serviceName, Object target, Object mock){
+    public MockServiceModel(Class<?> interfaceCls, String serviceName, Object target
+        , Object mock){
         this.interfaceCls = interfaceCls;
         this.serviceName = serviceName;
         this.target = target;
         this.mock = mock;
+    }
+
+    public MockServiceModel(Class<?> interfaceCls, String serviceName, Object target
+        , Object mock, boolean manual, boolean leaf){
+        this(interfaceCls, serviceName, target, mock);
+        this.manual = manual;
     }
 
     public Class<?> getInterfaceCls() {
@@ -68,17 +80,42 @@ public class MockServiceModel implements Serializable{
     @Override
     public boolean equals(Object obj) {
         MockServiceModel comp = (MockServiceModel)obj;
-        return this.interfaceCls.equals(comp.getInterfaceCls()) && this.serviceName.equals(comp.getServiceName());
+        if(StringUtils.isNotBlank(this.serviceName) && this.serviceName.equals(comp.getServiceName())){
+            return true;
+        }else if(this.interfaceCls.equals(comp.getInterfaceCls())){
+            return true;
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return this.interfaceCls.hashCode() + this.serviceName.hashCode();
+        if(StringUtils.isNotBlank(this.serviceName)){
+            return this.serviceName.hashCode();
+        }else{
+            return this.interfaceCls.hashCode();
+        }
     }
 
     @Override
     public MockServiceModel clone() throws CloneNotSupportedException {
         MockServiceModel model = new MockServiceModel(interfaceCls, serviceName, target, mock);
         return model;
+    }
+
+    public boolean isManual() {
+        return manual;
+    }
+
+    public void setManual(boolean manual) {
+        this.manual = manual;
+    }
+
+    public boolean isLeaf() {
+        return leaf;
+    }
+
+    public void setLeaf(boolean leaf) {
+        this.leaf = leaf;
     }
 }

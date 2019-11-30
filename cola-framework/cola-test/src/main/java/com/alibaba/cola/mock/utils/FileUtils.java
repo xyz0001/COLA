@@ -1,8 +1,12 @@
 package com.alibaba.cola.mock.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * @author shawnzhan.zxy
@@ -72,6 +76,16 @@ public class FileUtils {
         return appendSlashToURILast(dir);
     }
 
+    public static String getDefaultDirectory4ConfigFile(){
+        String dir = FileUtils.class.getResource("/").getPath().replaceAll("target/test-classes", "src/test/resources");
+        return appendSlashToURILast(dir);
+    }
+
+    public static String getDefaultTestClassDirectory(){
+        String dir = FileUtils.class.getResource("/").getPath();
+        return appendSlashToURILast(dir);
+    }
+
     /**
      * 重建文件
      *    删除+新建
@@ -96,14 +110,46 @@ public class FileUtils {
         return false;
     }
 
-    public static InputStream getTestClassTemplate(){
+    public static String readFile(InputStream stream){
+        StringBuilder sb = new StringBuilder();
+        InputStreamReader isReader = null;
+        BufferedReader br = null;
+        try {
+            isReader = new InputStreamReader(stream);
+            br = new BufferedReader(isReader);
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            CommonUtils.closeStream(br);
+        }
+        return sb.toString();
+    }
+
+    public static String readFile(String filePath){
+        try {
+            return readFile(new FileInputStream(filePath));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String getTemplate(String fileName){
+        return readFile(getTemplateStream(fileName));
+    }
+
+    public static InputStream getTemplateStream(String fileName){
         InputStream is = null;
         try {
-            is = Thread.currentThread().getContextClassLoader().getResourceAsStream("testclass-template.ftl");
+            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
         }catch (Exception e) {
         }
         if(is == null){
-            is = FileUtils.class.getResourceAsStream("/META-INF/testclass-template.ftl");
+            is = FileUtils.class.getResourceAsStream("/META-INF/" + fileName);
         }
         return is;
     }

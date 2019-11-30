@@ -11,9 +11,14 @@ import com.alibaba.cola.mock.utils.Constants;
 import com.alibaba.cola.mock.utils.MockHelper;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
+import org.mockito.Mockito;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
+
+import static com.alibaba.cola.mock.utils.ClassUtils.getClassName;
+import static com.alibaba.cola.mock.utils.ClassUtils.loadClass;
 
 /**
  * 数据录制控制器
@@ -25,7 +30,7 @@ public class ColaTestRecordController extends AbstractRecordController {
      * Config basePackage.
      */
     private String[] basePackages;
-    private static Class templateSuperClass;
+    public static Class templateSuperClass;
     private FilterManager monitorFilterManager = new FilterManager();
 
     public static String getTemplateSuperClassName(){
@@ -40,7 +45,9 @@ public class ColaTestRecordController extends AbstractRecordController {
     }
 
     public ColaTestRecordController(String... basePackages) {
+        Assert.assertNotNull(basePackages);
         this.basePackages = basePackages;
+        ColaMockito.g().getContext().setBasePackage(basePackages[0]);
     }
 
     @Override
@@ -48,6 +55,10 @@ public class ColaTestRecordController extends AbstractRecordController {
         try {
             ColaMockito.g().getContext().setRecording(true);
             List<ColaTestModel> colaTestModelList = ColaMockito.g().scanColaTest(basePackages);
+            ColaTestModel superColaTestModel = ColaMockito.g().scanColaTest(ColaMockito.g().getContext().getTestSuperClass());
+            if(superColaTestModel != null){
+                colaTestModelList.add(superColaTestModel);
+            }
             ColaMockito.g().getContext().setColaTestModelList(colaTestModelList);
             colaTestModelList.forEach(p -> {
                 monitorFilterManager.addAll(p.getTypeFilters());
@@ -75,6 +86,10 @@ public class ColaTestRecordController extends AbstractRecordController {
         try {
             Class factCls = Class.forName(metaClassName);
             serviceSet.add(new ServiceModel(beanName, factCls));
+
+            if(bean.getClass().getName().indexOf(Constants.COLAMOCK_PROXY_FLAG) > -1){
+                return bean;
+            }
             if(!(monitorFilterManager.match(factCls) && bean.getClass().getName().indexOf(Constants.COLAMOCK_PROXY_FLAG)<0)){
                 return bean;
             }
@@ -82,12 +97,7 @@ public class ColaTestRecordController extends AbstractRecordController {
             if (bean instanceof FactoryBean) {
                 return bean;
             }
-
-            DataRecordProxy mapperProxy = new DataRecordProxy(factCls, bean);
-            Object oriBean = bean;
-            //不能给代理再生成代理，改成了装饰器模式
-            bean = MockHelper.createMockFor(factCls, mapperProxy);
-            ColaMockito.g().getContext().putMonitorMock(new MockServiceModel(factCls, beanName, oriBean, bean));
+            bean = DataRecordProxy.createProxy2PoolWithManual(factCls, bean, beanName);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

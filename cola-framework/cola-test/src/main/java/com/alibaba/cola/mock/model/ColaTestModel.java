@@ -1,16 +1,27 @@
 package com.alibaba.cola.mock.model;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.alibaba.cola.mock.ColaMockito;
+import com.alibaba.cola.mock.annotation.ColaMock;
 import com.alibaba.cola.mock.annotation.ColaMockConfig;
 import com.alibaba.cola.mock.annotation.ExcludeCompare;
+import com.alibaba.cola.mock.scan.AnnotationScanner;
+import com.alibaba.cola.mock.scan.RegexPatternTypeFilter;
 import com.alibaba.cola.mock.scan.TypeFilter;
+import com.alibaba.cola.mock.utils.ClassUtils;
 import com.alibaba.cola.mock.utils.FileUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author shawnzhan.zxy
@@ -21,6 +32,8 @@ public class ColaTestModel implements Serializable{
     Class<?> testClazz;
     transient ColaMockConfig colaMockConfig;
     List<TypeFilter> mockFilters = new ArrayList<>();
+    /** 类方法拦截配置*/
+    Map<Class, List<RegexPatternTypeFilter>> methodFilterMap = new HashMap<Class, List<RegexPatternTypeFilter>>();
     List<TypeFilter> dataManufactureFilters = new ArrayList<>();
     Map<String, Object> dataMaps;
     /**
@@ -28,9 +41,12 @@ public class ColaTestModel implements Serializable{
      */
     Map<String, ExcludeCompare> noNeedCompareConfigMap = new HashMap<String, ExcludeCompare>();
 
-
     public void putCurrentTestMethodConfig(String testMethodName, ExcludeCompare currentMethodConfig){
         noNeedCompareConfigMap.put(testMethodName,currentMethodConfig);
+    }
+
+    public void putMethodFilter(Class fieldType, List<RegexPatternTypeFilter> filterList){
+        methodFilterMap.put(fieldType, filterList);
     }
 
     public ExcludeCompare getCurrentTestMethodConfig(String testMethodName){
@@ -99,10 +115,18 @@ public class ColaTestModel implements Serializable{
     }
 
     public boolean matchMockFilter(Class clazz){
-        for(TypeFilter filter : mockFilters){
-            if(filter.match(clazz)){
-                return true;
-            }
+        return matchMockFilter(clazz, null);
+        //for(TypeFilter filter : mockFilters){
+        //    if(filter.match(clazz)){
+        //        return true;
+        //    }
+        //}
+        //return false;
+    }
+
+    public boolean matchMockFilter(Class clazz, String methodName){
+        if(matchClass(clazz)){
+            return matchMethod(clazz, methodName);
         }
         return false;
     }
@@ -114,5 +138,48 @@ public class ColaTestModel implements Serializable{
             }
         }
         return false;
+    }
+
+    public void reScanConfigForInstance(){
+        Map<Field, Annotation> fieldAnnotationMap = new AnnotationScanner(testClazz, ColaMock.class).scan();
+        Set<Entry<Field, Annotation>> set = fieldAnnotationMap.entrySet();
+        Iterator<Entry<Field, Annotation>> it = set.iterator();
+        while (it.hasNext()){
+            Entry<Field, Annotation> fieldEntry = it.next();
+            ColaMock colaMock = (ColaMock)fieldEntry.getValue();
+            List<RegexPatternTypeFilter> regexFilterList = new ArrayList<>();
+            for(String methodName : colaMock.methods()){
+                regexFilterList.add(new RegexPatternTypeFilter(methodName));
+            }
+            putMethodFilter(fieldEntry.getKey().getType(),
+                regexFilterList);
+        }
+    }
+
+    private boolean matchClass(Class clazz){
+        for(TypeFilter filter : mockFilters){
+            if(filter.match(clazz)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean matchMethod(Class clazz, String methodName){
+        boolean match = true;
+        if(StringUtils.isBlank(methodName)){
+            return match;
+        }
+        Set<Entry<Class, List<RegexPatternTypeFilter>>> set = methodFilterMap.entrySet();
+        Iterator<Entry<Class, List<RegexPatternTypeFilter>>> it = set.iterator();
+        while (it.hasNext()){
+            Entry<Class, List<RegexPatternTypeFilter>> entry = it.next();
+            if(ClassUtils.isAssignableWithUnionAll(entry.getKey(), clazz)){
+                for(RegexPatternTypeFilter filter : entry.getValue()){
+                    return filter.match(methodName);
+                }
+            }
+        }
+        return match;
     }
 }

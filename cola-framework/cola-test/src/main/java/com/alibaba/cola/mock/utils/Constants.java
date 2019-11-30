@@ -11,10 +11,18 @@ public class Constants {
     public final static String SERVICE_LIST_DELIMITER = "_@_";
     public final static String UNDERLINE = "_";
     public final static String DOT = ".";
+    public static final String PATH_SEPARATOR = "/";
     /** 入参文件后缀*/
     public final static String INPUT_PARAMS_FILE_SUFFIX = "_inputParams";
     /** colamock 代理标识*/
     public final static String COLAMOCK_PROXY_FLAG = "ByColaMockWithCGLIB";
+
+    /**
+     * spring代理标识
+     */
+    public final static String SPRING_CGLIB_PROXY_FLAG = "EnhancerBySpringCGLIB";
+
+    public final static String COLAMOCK_PROXY_FLAG2 = "\\$\\$EnhancerByColaMockWithCGLIB";
     public final static String INNER_BEAN_NAME = "inner bean";
     public final static String NOTE_SYMBOL = "#";
 
@@ -49,4 +57,5 @@ public class Constants {
     public static final String GUIDE_QUIT = "q";
 
     public static final String OS_WINDOWS = "Windows";
+    public static final String TRUE = "true";
 }

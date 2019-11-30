@@ -16,6 +16,7 @@ public class StackNode {
     String method;
     int line;
     int level;
+    boolean error = false;
     StackNode parent;
     List<StackNode> childList = new ArrayList<>();
 
@@ -65,7 +66,8 @@ public class StackNode {
         }
         String selfPrefix = prefix + (isLast?"\\- ":"+- ");
         String lineStr = line > 0 ? "("+CommonUtils.getSimpleClassName(this.className)+".java:" + line + ")" : ":mock service";
-        sb.append(selfPrefix).append(className + ".").append(method).append(lineStr).append("\n");
+        String errorStr = error ? "==> ERR":"";
+        sb.append(selfPrefix).append(className + ".").append(method).append(lineStr).append(errorStr).append("\n");
 
         String childPrefix = prefix + (isLast?"   ":"|  ");
         for(int i = 0; i < this.childList.size(); i++){
@@ -122,5 +124,9 @@ public class StackNode {
 
     public void setParent(StackNode parent) {
         this.parent = parent;
+    }
+
+    public void setError(boolean error) {
+        this.error = error;
     }
 }

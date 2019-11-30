@@ -77,7 +77,7 @@ public class OnlineRecordCommand extends AbstractCommand{
     private ColaTestModel createCurColaTestModel() throws ClassNotFoundException {
         ColaTestModel colaTestModel = new ColaTestModel();
         colaTestModel.setTestClazz(Class.forName(className));
-        ColaTestModel templateColaTestModel = scanner.scanColaTest(ColaTestRecordController.getTemplateSuperClass());
+        ColaTestModel templateColaTestModel = scanner.scanColaTest(ColaMockito.g().getContext().getTestSuperClass());
         if(templateColaTestModel == null){
             throw new RuntimeException("templateSuperClass not exists!");
         }

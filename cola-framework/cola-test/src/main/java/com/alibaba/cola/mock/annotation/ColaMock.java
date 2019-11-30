@@ -13,4 +13,5 @@ import static java.lang.annotation.ElementType.FIELD;
 @Target( { FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ColaMock {
+    public String[] methods() default ".*";
 }

@@ -64,6 +64,9 @@ public class BeanPropertySetter {
     }
 
     public<T> T getValue() {
+        if(field == null){
+            return null;
+        }
         field.setAccessible(true);
         try {
             return (T)field.get(target);

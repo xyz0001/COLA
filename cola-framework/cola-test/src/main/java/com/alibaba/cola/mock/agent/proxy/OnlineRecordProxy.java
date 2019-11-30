@@ -70,8 +70,8 @@ public class OnlineRecordProxy{
         }
 
         String fullMethodName = o.getClass().getName() + NOTE_SYMBOL + method;
-        ColaTestGenerator generator = new ColaTestGenerator(fullMethodName, ColaTestRecordController.getTemplateSuperClassName());
-        generator.generate(paramterValues);
+        ColaTestGenerator generator = new ColaTestGenerator(fullMethodName, ColaMockito.g().getContext().getBasePackage(), paramterValues);
+        generator.generate();
 
         changeDataEngineFilePath(o.getClass().getName(), method);
         getColaMockito().getFileDataEngine().flushOutputData();

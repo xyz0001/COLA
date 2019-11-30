@@ -68,7 +68,8 @@ public class AutoMockFactoryBean<T> implements FactoryBean<T> {
         }catch(Exception e){
             e.printStackTrace();
         }
-        ColaMockito.g().getContext().putMonitorMock(new MockServiceModel(mapperInterface, beanName, oriTarget, colaProxy));
+        ColaMockito.g().getContext().putMonitorMock(new MockServiceModel(mapperInterface, beanName, oriTarget
+            , colaProxy, false, true));
         return colaProxy;
     }
 }

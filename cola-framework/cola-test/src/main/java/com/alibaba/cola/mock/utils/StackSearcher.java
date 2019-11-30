@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.alibaba.cola.mock.model.ColaTestModel;
 
+import static com.alibaba.cola.mock.utils.ClassUtils.convertClassFrom;
+import static com.alibaba.cola.mock.utils.ClassUtils.getOriClassNameFromCGLIB;
 import static com.alibaba.cola.mock.utils.Constants.COLAMOCK_PROXY_FLAG;
 
 /**
@@ -26,7 +28,7 @@ public class StackSearcher {
             if(stackTraceElement == null){
                 return false;
             }
-            if(mockClass.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))
+            if(mockClass.isAssignableFrom(convertClassFrom(stackTraceElement.getClassName()))
                 && mockMethod.equals(stackTraceElement.getMethodName())){
                 return true;
             }
@@ -41,10 +43,10 @@ public class StackSearcher {
         throws ClassNotFoundException {
         for(int i = stackTraceElements.length - 1; i > 0; i--){
             StackTraceElement element = stackTraceElements[i];
-            if(element.getClassName().indexOf("com.alibaba.cola") >= 0){
+            if(isConstantsExcludeStack(element)){
                 continue;
             }
-            if(colaTestModel.matchMockFilter(Class.forName(element.getClassName()))){
+            if(colaTestModel.matchMockFilter(convertClassFrom(element.getClassName()), element.getMethodName())){
                 return element;
             }
         }
@@ -55,35 +57,45 @@ public class StackSearcher {
         List<StackTraceElement> stacks = new ArrayList<>();
         for(StackTraceElement element : stackTraceElements){
             if(!isConstantsExcludeStack(element)
-                && isMatchMockFilter(colaTestModel, element.getClassName())){
+                && isMatchMockFilter(colaTestModel, element)){
                 stacks.add(element);
             }
         }
         return stacks.toArray(new StackTraceElement[]{});
     }
 
-    private static boolean isMatchMockFilter(ColaTestModel colaTestModel, String className){
-        if(!className.contains(COLAMOCK_PROXY_FLAG)){
+    private static boolean isMatchMockFilter(ColaTestModel colaTestModel, StackTraceElement element){
+        if(!element.getClassName().contains(COLAMOCK_PROXY_FLAG)){
             return true;
         }
         try {
-            return colaTestModel.matchMockFilter(Class.forName(className));
+            return colaTestModel.matchMockFilter(convertClassFrom(element.getClassName()), element.getMethodName());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         return false;
     }
 
+    /**
+     * 需要忽略的栈点
+     * @param element
+     * @return
+     */
     private static boolean isConstantsExcludeStack(StackTraceElement element){
-        if(element.getClassName().indexOf("com.alibaba.cola") >= 0
-            || element.getClassName().indexOf("org.junit") >= 0
-            || element.getClassName().indexOf("org.springframework") >= 0
-            || element.getClassName().indexOf("java.") >= 0
-            || element.getClassName().indexOf("sun.") >= 0
-            || element.getClassName().indexOf("com.intellij") >= 0
-            || element.getClassName().indexOf("com.taobao.pandora.boot") >= 0
-            || element.getClassName().indexOf("org.mockito") >= 0
+        String className = element.getClassName();
+        if(className.indexOf("com.alibaba.cola.") >= 0
+            || className.indexOf("org.junit") >= 0
+            || className.indexOf("org.springframework") >= 0
+            || className.indexOf("java.") >= 0
+            || className.indexOf("sun.") >= 0
+            || className.indexOf("com.intellij") >= 0
+            || className.indexOf("com.taobao.pandora.boot") >= 0
+            || className.indexOf("org.mockito") >= 0
             ){
+            return true;
+        }
+        //排除代理类
+        if(className.contains("CGLIB$$") && !className.contains(COLAMOCK_PROXY_FLAG)){
             return true;
         }
         return false;

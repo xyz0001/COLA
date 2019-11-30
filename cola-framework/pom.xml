@@ -31,6 +31,7 @@
 		<module>cola-test</module>
 		<module>cola-common</module>
 		<module>cola-core</module>
+		<module>cola-test-spring-boot-starter</module>
 	</modules>
 
 	<dependencyManagement>
@@ -38,7 +39,7 @@
 			<!--项目依赖 -->
 			<dependency>
 				<groupId>com.alibaba.cola</groupId>
-				<artifactId>cola-test</artifactId>
+				<artifactId>cola-test-spring-boot-starter</artifactId>
 				<version>${cola.framework.version}</version>
 				<scope>test</scope>
 			</dependency>

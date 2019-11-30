@@ -34,7 +34,7 @@ public class UnitTestListener extends RunListener{
 
         //开始前先清理repo
         ColaMockito.g().getFileDataEngine().clean();
-        readTestMethodConfig(description);
+        initTestConfig(description);
     }
 
     @Override
@@ -51,28 +51,42 @@ public class UnitTestListener extends RunListener{
             return;
         }
         spyHelper.resetTest();
+        printPrettyColaInfo();
         if(ErrorContext.isError()){
             ErrorContext.reset();
+            ColaMockito.g().getContext().clean();
             return;
         }
 
         boolean remain = ColaMockito.g().getFileDataEngine().validHasRemainData();
+        ColaMockito.g().getContext().clean();
         if(remain){
             throw new RuntimeException("remain data,please clean! testMethod=>" + description.getDisplayName());
         }
-        printPrettyColaInfo();
-        ColaMockito.g().getContext().clean();
     }
 
     @Override
     public void testFailure(Failure failure) throws Exception {
         ErrorContext.instance().cause(failure.getException()).message(failure.getMessage());
     }
+
+    private void initTestConfig(Description description) {
+        initFieldConfig(description);
+        initMethodConfig(description);
+    }
+
+    private void initFieldConfig(Description description){
+        ColaMockito.g().getContext()
+            .getColaTestModelMap()
+            .get(description.getTestClass())
+            .reScanConfigForInstance();
+    }
+
     /**
      * 初始化当前运行方法配置
      * @param description
      */
-    private void readTestMethodConfig(Description description) {
+    private void initMethodConfig(Description description) {
 
         ExcludeCompare noNeedCompareConfig = description.getAnnotation(ExcludeCompare.class);
 

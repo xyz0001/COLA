@@ -19,6 +19,7 @@ import com.alibaba.cola.mock.proxy.FactoryBeanProxy;
 import com.alibaba.cola.mock.proxy.OnlineDataRecordProxy;
 import com.alibaba.cola.mock.scan.FilterManager;
 import com.alibaba.cola.mock.scan.RegexPatternTypeFilter;
+import com.alibaba.cola.mock.utils.ClassUtils;
 import com.alibaba.cola.mock.utils.Constants;
 import com.alibaba.cola.mock.utils.MockHelper;
 
@@ -26,6 +27,8 @@ import org.junit.runner.Description;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
+
+import static com.alibaba.cola.mock.utils.ClassUtils.getClassName;
 
 /**
  * 数据录制控制器

@@ -1,6 +1,5 @@
 package com.alibaba.cola.mock;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,29 +12,29 @@ import java.util.stream.Collectors;
 
 import com.alibaba.cola.mock.model.ServiceModel;
 import com.alibaba.cola.mock.persist.ServiceListStore;
+import com.alibaba.cola.mock.utils.CommonUtils;
 import com.alibaba.cola.mock.utils.Constants;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.type.MethodMetadata;
 
 /**
  * @author shawnzhan.zxy
  * @date 2018/10/28
  */
-public abstract class AbstractRecordController
-    implements BeanPostProcessor,BeanDefinitionRegistryPostProcessor,ApplicationListener<ContextRefreshedEvent>,InitializingBean {
+public abstract class AbstractRecordController implements BeanPostProcessor,BeanDefinitionRegistryPostProcessor
+    ,ApplicationListener<ContextRefreshedEvent>,InitializingBean {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractRecordController.class);
+
     private static final Integer UN_START = 0;
     private static final Integer STARTING = 1;
     private static final Integer END = 2;
@@ -92,6 +91,8 @@ public abstract class AbstractRecordController
             serviceListStore.clean();
             serviceListStore.save(serviceStrList);
         }
+
+        CommonUtils.printMockObjectList();
     }
 
     @Override
@@ -115,33 +116,5 @@ public abstract class AbstractRecordController
         init();
     }
 
-    protected String getClassName(Object bean, BeanDefinition beanDefinition){
-        String className = null;
-        if(bean instanceof FactoryBean){
-            className = ((FactoryBean)bean).getObjectType().getName();
-        }else if(beanDefinition instanceof AnnotatedBeanDefinition){
-            MethodMetadata methodMetadata = ((AnnotatedBeanDefinition)beanDefinition).getFactoryMethodMetadata();
 
-            if(methodMetadata != null){
-                className = methodMetadata.getReturnTypeName();
-            }else{
-                className = ((AnnotatedBeanDefinition)beanDefinition).getMetadata().getClassName();
-            }
-        }else if(beanDefinition instanceof RootBeanDefinition){
-            className = bean.getClass().getName();
-        }else if(bean instanceof Proxy){
-            className = getClassNameFromProxy(bean);
-        }else{
-            className = beanDefinition.getBeanClassName();
-        }
-        return className;
-    }
-
-    private String getClassNameFromProxy(Object proxy){
-        Class[] intfs = proxy.getClass().getInterfaces();
-        if(intfs != null && intfs.length > 0){
-            return intfs[0].getName();
-        }
-        return proxy.toString();
-    }
 }
